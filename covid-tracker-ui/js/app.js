@@ -318,9 +318,132 @@ function escapeHtml(text) {
 }
 
 // ============================================
+// AI Insights Functions
+// ============================================
+
+/**
+ * Get AI-powered COVID insights for a country
+ */
+async function getCovidInsights() {
+    const countryInput = document.getElementById('ai-country-input').value.trim();
+    
+    if (!countryInput) {
+        showError('Please enter a country name to get AI insights.');
+        return;
+    }
+    
+    const container = document.getElementById('ai-insights-container');
+    
+    // Show loading state
+    container.innerHTML = `
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body ai-loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="ai-loading-text">Generating AI insights for ${escapeHtml(countryInput)}...</p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    try {
+        const response = await fetch(`${CONFIG.API_BASE_URL}/ai-insights/country/${encodeURIComponent(countryInput)}`);
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error(`Country "${countryInput}" not found. Please check the spelling and try again.`);
+            }
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        renderCovidInsights(data);
+        
+    } catch (error) {
+        console.error('Error fetching AI insights:', error);
+        container.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>Error:</strong> ${escapeHtml(error.message)}
+                </div>
+            </div>
+        `;
+    }
+}
+
+/**
+ * Render AI insights in the UI
+ * @param {Object} data - COVID insights data from API
+ */
+function renderCovidInsights(data) {
+    const container = document.getElementById('ai-insights-container');
+    
+    // Build main info card
+    let html = `
+        <div class="col-12">
+            <div class="insight-main-card">
+                <h3><i class="bi bi-geo-alt-fill"></i> ${escapeHtml(data.country)}</h3>
+                
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-label">Total Cases</div>
+                        <div class="stat-value">${formatNumber(data.totalCases)}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">New Cases</div>
+                        <div class="stat-value">${formatNumber(data.newCases)}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Total Deaths</div>
+                        <div class="stat-value">${formatNumber(data.totalDeaths)}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Recovered</div>
+                        <div class="stat-value">${formatNumber(data.totalRecovered)}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Active Cases</div>
+                        <div class="stat-value">${formatNumber(data.activeCases)}</div>
+                    </div>
+                </div>
+                
+                <div class="assessment-text">
+                    <strong><i class="bi bi-lightbulb-fill"></i> AI Assessment:</strong><br>
+                    ${escapeHtml(data.overallAssessment)}
+                </div>
+                
+                <div class="mt-3" style="font-size: 0.85rem; opacity: 0.8;">
+                    <i class="bi bi-clock"></i> Generated: ${escapeHtml(data.generatedAt)}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Build recommendation cards
+    if (data.recommendations && data.recommendations.length > 0) {
+        data.recommendations.forEach(rec => {
+            html += `
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="insight-card ${escapeHtml(rec.severity)}">
+                        <span class="insight-card-icon">${rec.icon}</span>
+                        <h5 class="insight-card-title">${escapeHtml(rec.title)}</h5>
+                        <p class="insight-card-description">${escapeHtml(rec.description)}</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    
+    container.innerHTML = html;
+}
+
+// ============================================
 // Export functions for testing (if needed)
 // ============================================
 
 // Uncomment if you need to test these functions
-// module.exports = { formatNumber, escapeHtml, sortTable };
+// module.exports = { formatNumber, escapeHtml, sortTable, getCovidInsights, renderCovidInsights };
 

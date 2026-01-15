@@ -89,7 +89,7 @@ const CONFIG = {
 
 ```bash
 cd covid-tracker-ui
-npx http-server -p 8000
+npx http-server -p 8000 -cors
 ```
 Open `http://localhost:8000` in your browser
 

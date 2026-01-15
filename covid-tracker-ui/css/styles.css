@@ -357,6 +357,133 @@ footer {
     animation-delay: 0.4s;
 }
 
+/* AI Insights Styles */
+.insight-card {
+    border-left: 4px solid;
+    padding: 1.25rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+    height: 100%;
+}
+
+.insight-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.insight-card.info {
+    border-left-color: var(--info-color);
+}
+
+.insight-card.warning {
+    border-left-color: var(--warning-color);
+}
+
+.insight-card.success {
+    border-left-color: var(--success-color);
+}
+
+.insight-card.danger {
+    border-left-color: var(--danger-color);
+}
+
+.insight-card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+
+.insight-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--dark-text);
+    margin-bottom: 0.5rem;
+}
+
+.insight-card-description {
+    font-size: 0.95rem;
+    color: #6c757d;
+    line-height: 1.5;
+    margin-bottom: 0;
+}
+
+.insight-main-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.insight-main-card h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.insight-main-card .stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin: 1rem 0;
+}
+
+.insight-main-card .stat-item {
+    flex: 1;
+    min-width: 150px;
+}
+
+.insight-main-card .stat-label {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    margin-bottom: 0.25rem;
+}
+
+.insight-main-card .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.insight-main-card .assessment-text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin-top: 1rem;
+    opacity: 0.95;
+}
+
+/* Loading spinner for AI insights */
+.ai-loading {
+    text-align: center;
+    padding: 3rem;
+}
+
+.ai-loading .spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3rem;
+}
+
+.ai-loading-text {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    color: #6c757d;
+}
+
+/* AI Country Input */
+#ai-country-input {
+    border-radius: var(--border-radius);
+    border: 2px solid #dee2e6;
+    transition: border-color var(--transition-speed);
+}
+
+#ai-country-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
 /* Print Styles */
 @media print {
     .navbar,
@@ -372,6 +499,10 @@ footer {
 
     .table {
         font-size: 0.8rem;
+    }
+    
+    .insight-card {
+        page-break-inside: avoid;
     }
 }
 

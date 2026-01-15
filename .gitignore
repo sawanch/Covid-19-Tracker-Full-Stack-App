@@ -76,3 +76,12 @@ logs/
 site/
 # MkDocs configuration (keep local only)
 mkdocs.yml
+
+# Documentation files (local only)
+AI-INSIGHTS-IMPLEMENTATION-SUMMARY.md
+AI-INSIGHTS-SETUP.md
+BUILDING-GUIDE.md
+BUILDING-GUIDE 2.md
+DATA-INITIALIZATION-COMPARISON.md
+OPENAI-API-KEY-SETUP.md
+USER-GUIDE.md
