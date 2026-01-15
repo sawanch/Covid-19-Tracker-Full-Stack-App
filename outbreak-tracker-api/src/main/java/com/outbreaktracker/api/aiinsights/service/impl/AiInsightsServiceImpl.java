@@ -20,31 +20,32 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
- * AI-powered respiratory outbreak insights using OpenAI API
- * Generates safety recommendations and trend analysis based on country outbreak data
+ * Service implementation for AI insights operations
+ * Integrates with OpenAI API to generate intelligent outbreak analysis
+ * 
+ * Approach: Fetches outbreak data, builds AI prompts, and processes responses
+ * Falls back to rule-based recommendations if AI is unavailable
  */
 @Service
 public class AiInsightsServiceImpl implements AiInsightsService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(AiInsightsServiceImpl.class);
-    
+
     private final CovidDataService covidDataService;
     private final WebClient webClient;
     private final String model;
     private final boolean aiEnabled;
     private final ObjectMapper objectMapper;
-    
-    public AiInsightsServiceImpl(
-            CovidDataService covidDataService,
-            @Value("${openai.api.key:}") String apiKey,
-            @Value("${openai.model:gpt-4o-mini}") String model,
-            @Value("${openai.enabled:true}") boolean enabled) {
-        
+
+    public AiInsightsServiceImpl(CovidDataService covidDataService,
+                                 @Value("${openai.api.key:}") String apiKey,
+                                 @Value("${openai.model:gpt-4o-mini}") String model,
+                                 @Value("${openai.enabled:true}") boolean enabled) {
         this.covidDataService = covidDataService;
         this.model = model;
         this.aiEnabled = enabled && apiKey != null && !apiKey.trim().isEmpty();
         this.objectMapper = new ObjectMapper();
-        
+
         if (this.aiEnabled) {
             this.webClient = WebClient.builder()
                     .baseUrl("https://api.openai.com/v1")
@@ -58,18 +59,19 @@ public class AiInsightsServiceImpl implements AiInsightsService {
         }
     }
     
+    /**
+     * Generates AI-powered insights for a specific country
+     * Fetches country data, calls OpenAI API, and builds intelligent recommendations
+     */
     @Override
     public CovidInsightsResponse getCountryInsights(String countryName) {
-        logger.info("Generating respiratory outbreak insights for country: {}", countryName);
-        
-        // Fetch country data
+        logger.debug("Generating respiratory outbreak insights for country: {}", countryName);
+
         CovidData countryData = covidDataService.getCountryData(countryName);
-        
         if (countryData == null) {
             throw new RuntimeException("Country not found: " + countryName);
         }
-        
-        // Build response
+
         CovidInsightsResponse response = new CovidInsightsResponse();
         response.setCountry(countryData.getCountry());
         response.setTotalCases(countryData.getTotalCases());
@@ -79,7 +81,7 @@ public class AiInsightsServiceImpl implements AiInsightsService {
         response.setActiveCases(countryData.getActiveCases());
         response.setGeneratedAt(LocalDateTime.now().format(
                 DateTimeFormatter.ofPattern("MMMM d, yyyy, h:mm a")));
-        
+
         if (aiEnabled) {
             try {
                 String prompt = buildInsightsPrompt(countryData);
@@ -90,15 +92,15 @@ public class AiInsightsServiceImpl implements AiInsightsService {
                 logger.warn("AI request failed, using fallback: {}", e.getMessage());
             }
         }
-        
-        // Fallback recommendations
+
         response.setOverallAssessment(generateFallbackAssessment(countryData));
         response.setRecommendations(generateFallbackRecommendations(countryData));
         return response;
     }
     
     /**
-     * Build prompt for OpenAI API
+     * Builds AI prompt with outbreak data and instructions
+     * Creates structured prompt for OpenAI to generate insights
      */
     private String buildInsightsPrompt(CovidData data) {
         // Calculate mortality rate
@@ -178,7 +180,8 @@ public class AiInsightsServiceImpl implements AiInsightsService {
     }
     
     /**
-     * Call OpenAI API
+     * Calls OpenAI API with prompt and temperature settings
+     * Returns raw AI-generated response text
      */
     private String callOpenAI(String prompt, double temperature) {
         Map<String, Object> requestBody = new HashMap<>();
@@ -217,7 +220,8 @@ public class AiInsightsServiceImpl implements AiInsightsService {
     }
     
     /**
-     * Parse AI response and populate CovidInsightsResponse
+     * Parses AI response JSON and populates insights response object
+     * Handles markdown code fences and extracts structured data
      */
     private void parseInsightsResponse(String aiResponse, CovidInsightsResponse response) {
         try {
@@ -263,7 +267,8 @@ public class AiInsightsServiceImpl implements AiInsightsService {
     }
     
     /**
-     * Generate fallback assessment when AI is unavailable
+     * Generates rule-based assessment when AI is unavailable
+     * Uses simple heuristics based on case counts
      */
     private String generateFallbackAssessment(CovidData data) {
         String countryName = data.getCountry();
@@ -287,7 +292,8 @@ public class AiInsightsServiceImpl implements AiInsightsService {
     }
     
     /**
-     * Generate fallback recommendations when AI is unavailable
+     * Generates rule-based recommendations when AI is unavailable
+     * Returns predefined safety cards based on case trends
      */
     private List<InsightCard> generateFallbackRecommendations(CovidData data) {
         List<InsightCard> cards = new ArrayList<>();

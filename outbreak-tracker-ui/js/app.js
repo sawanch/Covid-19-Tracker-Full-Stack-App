@@ -210,6 +210,10 @@ function populateCountryDropdown(countries) {
         option.textContent = country.country;
         select.appendChild(option);
     });
+    
+    // Set US as default and load insights automatically
+    select.value = 'US';
+    getOutbreakInsights();
 }
 
 // ============================================
@@ -439,6 +443,11 @@ function renderOutbreakInsights(data) {
                 <div class="assessment-text">
                     <strong><i class="bi bi-lightbulb-fill"></i> AI Assessment:</strong><br>
                     ${escapeHtml(data.overallAssessment)}
+                </div>
+                
+                <div class="ai-metadata">
+                    <div class="ai-metadata-header"><i class="bi bi-robot"></i> AI-Generated Analysis</div>
+                    <div class="ai-metadata-details"><strong>Model:</strong> GPT-4o-mini | <strong>Temperature:</strong> 0.7 | <strong>Tokens:</strong> ~450</div>
                 </div>
                 
                 <div class="mt-3" style="font-size: 0.85rem; opacity: 0.8;">

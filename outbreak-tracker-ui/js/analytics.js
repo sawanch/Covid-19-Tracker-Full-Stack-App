@@ -66,8 +66,13 @@ function displaySummary(summary) {
 
 // Create endpoint stats chart
 function createEndpointStatsChart(endpointStats) {
-    const endpoints = Object.keys(endpointStats).map(formatEndpoint);
-    const counts = Object.values(endpointStats);
+    // Sort by count (descending) and take top 5 endpoints
+    const sortedEntries = Object.entries(endpointStats)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 5);
+    
+    const endpoints = sortedEntries.map(([ep]) => formatEndpoint(ep));
+    const counts = sortedEntries.map(([, count]) => count);
     
     endpointStatsChart = Highcharts.chart('endpoint-stats-chart', {
         chart: { type: 'column', height: 300, backgroundColor: 'transparent' },
@@ -93,8 +98,13 @@ function createEndpointStatsChart(endpointStats) {
 
 // Create response time chart
 function createResponseTimeChart(responseTimeStats) {
-    const endpoints = Object.keys(responseTimeStats).map(formatEndpoint);
-    const times = Object.values(responseTimeStats).map(t => Math.round(t * 100) / 100);
+    // Sort by response time (descending) and take top 7 slowest endpoints
+    const sortedEntries = Object.entries(responseTimeStats)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, 7);
+    
+    const endpoints = sortedEntries.map(([ep]) => formatEndpoint(ep));
+    const times = sortedEntries.map(([, time]) => Math.round(time * 100) / 100);
     
     responseTimeChart = Highcharts.chart('response-time-chart', {
         chart: { type: 'line', height: 300, backgroundColor: 'transparent' },
@@ -126,17 +136,20 @@ function createResponseTimeChart(responseTimeStats) {
 
 // Create success/error chart
 function createSuccessErrorChart(successErrorRates) {
-    const endpoints = Object.keys(successErrorRates);
-    const successData = [];
-    const errorData = [];
+    // Sort by total requests (success + error) and take top 5 endpoints
+    const sortedEntries = Object.entries(successErrorRates)
+        .map(([endpoint, rates]) => ({
+            endpoint,
+            success: rates.success || 0,
+            error: rates.error || 0,
+            total: (rates.success || 0) + (rates.error || 0)
+        }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 5);
     
-    endpoints.forEach(endpoint => {
-        const rates = successErrorRates[endpoint];
-        successData.push(rates.success || 0);
-        errorData.push(rates.error || 0);
-    });
-    
-    const displayEndpoints = endpoints.map(formatEndpoint);
+    const displayEndpoints = sortedEntries.map(e => formatEndpoint(e.endpoint));
+    const successData = sortedEntries.map(e => e.success);
+    const errorData = sortedEntries.map(e => e.error);
     
     successErrorChart = Highcharts.chart('success-error-chart', {
         chart: { type: 'column', height: 300, backgroundColor: 'transparent' },
