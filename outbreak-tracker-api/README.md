@@ -105,7 +105,7 @@ spring.data.mongodb.uri=mongodb+srv://username:password@cluster.mongodb.net/covi
 
 **Option A: Using Maven**
 ```bash
-cd covid-tracker-api
+cd outbreak-tracker-api
 mvn spring-boot:run
 ```
 
@@ -116,7 +116,7 @@ mvn spring-boot:run
 **Option C: Using JAR**
 ```bash
 mvn clean package
-java -jar target/covid-tracker-api.jar
+java -jar target/outbreak-tracker-api.jar
 ```
 
 The API will start on `http://localhost:8080`
@@ -175,10 +175,10 @@ Key configuration properties in `application.properties`:
 server.port=8080
 
 # CSV Data File Location
-covid.data.file=classpath:data/covid19_confirmed_global.csv
+outbreak.data.file=classpath:data/covid19_confirmed_global.csv
 
 # Logging Configuration
-logging.file.name=logs/covid-tracker-api.log
+logging.file.name=logs/outbreak-tracker-api.log
 logging.file.max-size=10MB
 logging.file.max-history=10
 
@@ -190,7 +190,7 @@ management.endpoint.health.show-details=always
 ## Project Structure
 
 ```
-covid-tracker-api/
+outbreak-tracker-api/
 ├── src/main/java/com/covidtracker/api/
 │   ├── controller/
 │   │   └── CovidDataController.java          # REST endpoint handlers
@@ -239,7 +239,7 @@ covid-tracker-api/
 The application uses Logback for logging with file rotation:
 
 - **Console Logging**: Real-time logs during development
-- **File Logging**: Persistent logs in `logs/covid-tracker-api.log`
+- **File Logging**: Persistent logs in `logs/outbreak-tracker-api.log`
 - **Rotation**: Automatic log rotation when file reaches 10MB
 - **History**: Maintains up to 10 archived log files (compressed as `.gz`)
 
@@ -247,7 +247,7 @@ The application uses Logback for logging with file rotation:
 ```properties
 logging.level.root=INFO
 logging.level.com.covidtracker.api=INFO
-logging.file.name=logs/covid-tracker-api.log
+logging.file.name=logs/outbreak-tracker-api.log
 logging.logback.rollingpolicy.max-file-size=10MB
 logging.logback.rollingpolicy.max-history=10
 ```
@@ -260,8 +260,8 @@ logging.logback.rollingpolicy.max-history=10
 ```
 
 **Log File Structure:**
-- `covid-tracker-api.log` - Current log file
-- `covid-tracker-api.log.2024-01-14.0.gz` - Archived compressed logs
+- `outbreak-tracker-api.log` - Current log file
+- `outbreak-tracker-api.log.2024-01-14.0.gz` - Archived compressed logs
 
 ## Testing
 
@@ -288,7 +288,7 @@ The API is designed for deployment on AWS EC2 or any Java-compatible server:
 1. Build the JAR file: `mvn clean package`
 2. Upload JAR to server
 3. Configure database connections
-4. Run with: `java -jar covid-tracker-api.jar`
+4. Run with: `java -jar outbreak-tracker-api.jar`
 5. Use systemd for service management
 
 See the main project [AWS Deployment Guide](../docs/aws-deployment.md) for detailed instructions.
