@@ -126,53 +126,40 @@ public class AnalyticsAiServiceImpl implements AnalyticsAiService {
         }
         
         return String.format(
-                "You are a DevOps expert analyzing API performance metrics. Provide a PROFESSIONAL and ENCOURAGING assessment.\n\n" +
+                "You are a DevOps expert analyzing API performance metrics. Provide a CONCISE, PROFESSIONAL assessment.\n\n" +
                 "System Metrics:\n" +
                 "Total API Requests: %,d\n" +
                 "Average Response Time: %.1f ms (%s performance)\n" +
                 "Slowest Endpoint: %s (%.1f ms)\n" +
                 "Error Rate: %.2f%%\n\n" +
-                "IMPORTANT INSTRUCTIONS:\n" +
-                "- Use PROFESSIONAL and ENCOURAGING language\n" +
-                "- Avoid negative words like: unacceptable, terrible, bad, poor, critical, failing\n" +
-                "- Use constructive phrases: \"opportunity to optimize\", \"can be improved\", \"recommended to address\", \"focus on enhancing\"\n" +
-                "- Focus on DIFFERENT aspects: performance, reliability, bottlenecks, or optimization\n" +
-                "- Maintain a supportive tone that motivates action\n" +
-                "- Keep assessment concise (2-3 sentences)\n" +
-                "- Make each response feel unique and tailored\n\n" +
+                "CRITICAL INSTRUCTIONS:\n" +
+                "- BE CONCISE - Use short, direct sentences\n" +
+                "- Avoid verbose explanations\n" +
+                "- Get straight to the point\n" +
+                "- Use professional, constructive language\n" +
+                "- Avoid: unacceptable, terrible, bad, poor, critical, failing\n\n" +
                 "Provide a JSON response with:\n" +
-                "1. overallAssessment: A natural 2-3 sentence analysis focusing on:\n" +
-                "   - Overall system health (use: healthy/stable/needs attention/requires focus)\n" +
-                "   - Key performance indicator that stands out\n" +
-                "   - Actionable observation with encouraging tone\n\n" +
-                "2. recommendations: EXACTLY 2 recommendations in this specific order:\n" +
+                "1. overallAssessment: ONE concise sentence (max 25 words) that identifies the key issue and action needed.\n" +
+                "   Example: \"System needs attention - focus on reducing the 3051ms response time and addressing the 7.29%% error rate.\"\n\n" +
+                "2. recommendations: EXACTLY 2 concise recommendations:\n" +
                 "   \n" +
-                "   FIRST RECOMMENDATION - \"Latency Issues\":\n" +
-                "   - Title must be exactly: \"Latency Issues\"\n" +
-                "   - Provide specific, encouraging advice about investigating and optimizing the slowest endpoint: %s\n" +
-                "   - Use professional, constructive language (avoid \"unacceptable\")\n" +
-                "   - Suggest investigating potential improvements (database queries, API calls, caching)\n" +
-                "   - Use emoji: ⚡\n" +
+                "   FIRST - \"Latency Issues\":\n" +
+                "   - Title: \"Latency Issues\"\n" +
+                "   - Description: ONE sentence (max 20 words) with specific action for endpoint: %s\n" +
+                "   - Example: \"Optimize %s endpoint - investigate database queries and external API calls.\"\n" +
+                "   - Emoji: ⚡\n" +
                 "   \n" +
-                "   SECOND RECOMMENDATION - \"Error Monitoring\":\n" +
-                "   - Title must be exactly: \"Error Monitoring\"\n" +
-                "   - Provide encouraging advice about implementing error tracking and logging\n" +
-                "   - Mention the current error rate: %.2f%%\n" +
-                "   - Use professional, supportive language\n" +
-                "   - Use emoji: 🔍\n\n" +
-                "Format each recommendation:\n" +
-                "{\n" +
-                "  \"icon\": \"⚡ or 🔍\",\n" +
-                "  \"title\": \"Latency Issues\" or \"Error Monitoring\" (exact titles required)\",\n" +
-                "  \"description\": \"Specific, encouraging advice (1-2 sentences)\",\n" +
-                "  \"severity\": \"info|warning|success\" (error rate: <1%%=success, 1-5%%=info, >5%%=warning)\n" +
-                "}\n\n" +
+                "   SECOND - \"Error Monitoring\":\n" +
+                "   - Title: \"Error Monitoring\"\n" +
+                "   - Description: ONE sentence (max 20 words) about error tracking with rate: %.2f%%\n" +
+                "   - Example: \"Implement error tracking to address the %.2f%% error rate and improve stability.\"\n" +
+                "   - Emoji: 🔍\n\n" +
                 "Return ONLY valid JSON:\n" +
                 "{\n" +
-                "  \"overallAssessment\": \"your assessment\",\n" +
+                "  \"overallAssessment\": \"one concise sentence\",\n" +
                 "  \"recommendations\": [\n" +
-                "    {\"icon\": \"⚡\", \"title\": \"Latency Issues\", \"description\": \"...\", \"severity\": \"...\"},\n" +
-                "    {\"icon\": \"🔍\", \"title\": \"Error Monitoring\", \"description\": \"...\", \"severity\": \"...\"}\n" +
+                "    {\"icon\": \"⚡\", \"title\": \"Latency Issues\", \"description\": \"one short sentence\", \"severity\": \"info|warning|success\"},\n" +
+                "    {\"icon\": \"🔍\", \"title\": \"Error Monitoring\", \"description\": \"one short sentence\", \"severity\": \"info|warning|success\"}\n" +
                 "  ]\n" +
                 "}",
                 totalRequests,
@@ -182,6 +169,8 @@ public class AnalyticsAiServiceImpl implements AnalyticsAiService {
                 maxResponseTime,
                 errorRate,
                 slowestEndpoint,
+                slowestEndpoint,
+                errorRate,
                 errorRate
         );
     }
@@ -257,42 +246,43 @@ public class AnalyticsAiServiceImpl implements AnalyticsAiService {
      * Generates rule-based recommendations when AI is unavailable
      */
     private void generateFallbackInsights(AnalyticsInsightsResponse response) {
-        response.setOverallAssessment("System metrics are being actively monitored. " +
-                "Focus on optimizing response times and maintaining error rates to ensure excellent performance and reliability.");
+        // Concise assessment
+        if (response.getAvgResponseTime() != null && response.getAvgResponseTime() > 1000) {
+            response.setOverallAssessment(String.format("System needs attention - reduce %.1f ms response time and address %.2f%% error rate.",
+                    response.getAvgResponseTime(), response.getErrorRate()));
+        } else {
+            response.setOverallAssessment("System is stable - maintain current performance and monitor for improvements.");
+        }
         
         List<AnalyticsInsightCard> cards = new ArrayList<>();
         
-        // Always provide exactly 2 recommendations
-        
-        // 1. Latency Issues
+        // 1. Latency Issues - Concise
         String latencyDescription;
         String latencySeverity;
         if (response.getAvgResponseTime() != null && response.getAvgResponseTime() > 1000) {
-            latencyDescription = String.format("Focus on optimizing the %s endpoint, as its response time presents an opportunity for improvement. " +
-                    "Investigate potential database queries or external API calls that could be enhanced to reduce response time.",
+            latencyDescription = String.format("Optimize %s - investigate database queries and external API calls.",
                     response.getSlowestEndpoint());
             latencySeverity = "warning";
         } else {
-            latencyDescription = String.format("Monitor the %s endpoint to maintain optimal response times and proactively prevent future bottlenecks.",
+            latencyDescription = String.format("Monitor %s endpoint to maintain optimal performance.",
                     response.getSlowestEndpoint());
             latencySeverity = "info";
         }
         cards.add(new AnalyticsInsightCard("⚡", "Latency Issues", latencyDescription, latencySeverity));
         
-        // 2. Error Monitoring
+        // 2. Error Monitoring - Concise
         String errorDescription;
         String errorSeverity;
         if (response.getErrorRate() != null && response.getErrorRate() > 5) {
-            errorDescription = String.format("Consider implementing comprehensive error tracking and logging systems to better understand the %.2f%% error rate. " +
-                    "This will help identify and resolve issues proactively, ensuring a more stable API performance.",
+            errorDescription = String.format("Implement error tracking to address %.2f%% error rate and improve stability.",
                     response.getErrorRate());
             errorSeverity = "warning";
         } else if (response.getErrorRate() != null && response.getErrorRate() > 1) {
-            errorDescription = String.format("Enhance error monitoring capabilities to maintain the current %.2f%% error rate and detect potential issues early.",
+            errorDescription = String.format("Enhance error monitoring to maintain %.2f%% error rate.",
                     response.getErrorRate());
             errorSeverity = "info";
         } else {
-            errorDescription = "Continue monitoring error patterns to maintain excellent system reliability and quickly identify any anomalies.";
+            errorDescription = "Continue monitoring error patterns to maintain system reliability.";
             errorSeverity = "success";
         }
         cards.add(new AnalyticsInsightCard("🔍", "Error Monitoring", errorDescription, errorSeverity));
